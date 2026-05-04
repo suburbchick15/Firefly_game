@@ -79,6 +79,33 @@
       z-index: 3;
     }
 
+    .eye {
+      position: absolute;
+      top: 4px;
+      width: 2.5px;
+      height: 2.5px;
+      background: #2b1a10;
+      border-radius: 50%;
+    }
+
+    .leftEye {
+      left: 3px;
+    }
+
+    .rightEye {
+      right: 3px;
+    }
+
+    .smile {
+      position: absolute;
+      left: 4px;
+      top: 7px;
+      width: 5px;
+      height: 3px;
+      border-bottom: 1.5px solid #2b1a10;
+      border-radius: 50%;
+    }
+
     .wing {
       position: absolute;
       width: 18px;
@@ -163,7 +190,7 @@
     </div>
 
     <div id="levelText">Level: Easy</div>
-    <div id="timer">Time: 40</div>
+    <div id="timer">Time: 45</div>
     <div id="score">Fireflies: 0</div>
 
     <button id="startBtn">Start Game</button>
@@ -186,12 +213,13 @@
     const leaderboard = document.getElementById("leaderboard");
 
     let score = 0;
-    let timeLeft = 40;
+    let timeLeft = 45;
     let gameRunning = false;
     let timer;
     let spawnTimer;
     let audioStarted = false;
     let audioCtx;
+    let musicTimer;
 
     let currentLevel = "easy";
 
@@ -199,26 +227,29 @@
       easy: {
         label: "Easy",
         time: 45,
-        spawnSpeed: 1800,
-        minWait: 900,
-        maxWait: 1500,
-        glowWindow: 3200
+        spawnSpeed: 1700,
+        minWait: 800,
+        maxWait: 1400,
+        glowWindow: 3300,
+        earlyTapRemoves: false
       },
       medium: {
         label: "Medium",
         time: 40,
-        spawnSpeed: 1400,
-        minWait: 800,
-        maxWait: 1300,
-        glowWindow: 2600
+        spawnSpeed: 1300,
+        minWait: 700,
+        maxWait: 1200,
+        glowWindow: 2300,
+        earlyTapRemoves: true
       },
       hard: {
         label: "Hard",
         time: 35,
-        spawnSpeed: 1050,
-        minWait: 650,
-        maxWait: 1100,
-        glowWindow: 1900
+        spawnSpeed: 950,
+        minWait: 550,
+        maxWait: 950,
+        glowWindow: 1500,
+        earlyTapRemoves: true
       }
     };
 
@@ -278,7 +309,11 @@
         <div class="wing left"></div>
         <div class="wing right"></div>
         <div class="body"></div>
-        <div class="head"></div>
+        <div class="head">
+          <div class="eye leftEye"></div>
+          <div class="eye rightEye"></div>
+          <div class="smile"></div>
+        </div>
       `;
 
       const x = Math.random() * (window.innerWidth - 70);
@@ -309,8 +344,12 @@
           playDing();
           firefly.remove();
         } else {
-          message.textContent = "Not yet... wait for the glow!";
+          message.textContent = "Oops! That firefly wasn't glowing yet. Try waiting patiently.";
           playSoftOops();
+
+          if (settings.earlyTapRemoves) {
+            firefly.remove();
+          }
         }
       };
 
@@ -400,15 +439,16 @@
     }
 
     function startGentleMusic() {
-      if (audioStarted) return;
-      audioStarted = true;
+      if (!audioCtx) {
+        audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      }
 
-      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+      if (musicTimer) return;
 
-      const notes = [392, 440, 523, 440, 392, 330];
+      const notes = [392, 440, 494, 523, 494, 440, 392, 349];
       let i = 0;
 
-      setInterval(() => {
+      musicTimer = setInterval(() => {
         if (!gameRunning) return;
 
         const osc = audioCtx.createOscillator();
@@ -418,16 +458,16 @@
         osc.type = "sine";
 
         gain.gain.setValueAtTime(0.018, audioCtx.currentTime);
-        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.1);
 
         osc.connect(gain);
         gain.connect(audioCtx.destination);
 
         osc.start();
-        osc.stop(audioCtx.currentTime + 1);
+        osc.stop(audioCtx.currentTime + 1.1);
 
         i++;
-      }, 1200);
+      }, 900);
     }
 
     function playDing() {
