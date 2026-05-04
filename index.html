@@ -1,15 +1,16 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Harmony Hollow Firefly Catch</title>
+  <title>Harmony Hollow Firefly Patience Game</title>
   <style>
     body {
       margin: 0;
       overflow: hidden;
       font-family: Georgia, serif;
-      background: linear-gradient(#17233f, #27452f);
+      background: linear-gradient(#101936, #203b2b, #315234);
       color: white;
       text-align: center;
+      touch-action: manipulation;
     }
 
     #game {
@@ -20,54 +21,127 @@
     }
 
     h1 {
-      margin-top: 20px;
-      font-size: 32px;
+      margin-top: 18px;
+      font-size: 30px;
+      color: #ffeaa7;
+      text-shadow: 0 0 8px #000;
     }
 
-    #score, #timer, #message {
-      font-size: 22px;
-      margin: 8px;
+    #instructions, #score, #timer, #message {
+      font-size: 20px;
+      margin: 7px;
+      text-shadow: 0 0 5px #000;
+    }
+
+    #startBtn {
+      margin-top: 18px;
+      padding: 14px 28px;
+      font-size: 21px;
+      border-radius: 25px;
+      border: none;
+      background: #ffe98a;
+      color: #3b2b12;
+      cursor: pointer;
+      font-weight: bold;
+      box-shadow: 0 4px 10px rgba(0,0,0,.3);
     }
 
     .firefly {
       position: absolute;
-      width: 28px;
-      height: 28px;
-      background: radial-gradient(circle, #fff8a6, #ffe45c, transparent);
+      width: 46px;
+      height: 46px;
+      cursor: pointer;
+      transition: transform 0.3s;
+    }
+
+    .body {
+      position: absolute;
+      left: 15px;
+      top: 16px;
+      width: 16px;
+      height: 22px;
+      background: #6b4a2b;
       border-radius: 50%;
-      box-shadow: 0 0 20px #fff38a;
-      cursor: pointer;
-      animation: float 2s infinite alternate ease-in-out;
+      z-index: 2;
     }
 
-    @keyframes float {
-      from { transform: translateY(0px); }
-      to { transform: translateY(-18px); }
+    .head {
+      position: absolute;
+      left: 17px;
+      top: 8px;
+      width: 13px;
+      height: 13px;
+      background: #8b5e35;
+      border-radius: 50%;
+      z-index: 3;
     }
 
-    #startBtn {
-      padding: 12px 24px;
-      font-size: 20px;
-      border-radius: 20px;
-      border: none;
-      background: #ffe98a;
-      cursor: pointer;
+    .wing {
+      position: absolute;
+      width: 18px;
+      height: 24px;
+      background: rgba(230, 245, 255, 0.75);
+      border-radius: 50%;
+      top: 10px;
+      z-index: 1;
+    }
+
+    .wing.left {
+      left: 4px;
+      transform: rotate(-25deg);
+    }
+
+    .wing.right {
+      right: 4px;
+      transform: rotate(25deg);
+    }
+
+    .glow {
+      position: absolute;
+      left: 7px;
+      top: 20px;
+      width: 32px;
+      height: 32px;
+      background: radial-gradient(circle, #fff8aa, #ffe96e, transparent);
+      border-radius: 50%;
+      opacity: 0.25;
+      box-shadow: 0 0 8px #ffe96e;
+      transition: all 0.4s;
+    }
+
+    .ready .glow {
+      opacity: 1;
+      transform: scale(1.6);
+      box-shadow: 0 0 35px #fff6a8;
+    }
+
+    .ready {
+      animation: gentlePulse 1s infinite alternate;
+    }
+
+    @keyframes gentlePulse {
+      from { transform: scale(1); }
+      to { transform: scale(1.08); }
     }
 
     #prize {
       font-size: 24px;
       margin-top: 15px;
       color: #ffe98a;
+      font-weight: bold;
+      text-shadow: 0 0 6px #000;
     }
   </style>
 </head>
+
 <body>
   <div id="game">
-    <h1>Catch the Fireflies</h1>
-    <div id="timer">Time: 30</div>
+    <h1>Harmony Hollow Firefly Glow Game</h1>
+    <div id="instructions">Wait patiently. Tap a firefly only when it glows bright!</div>
+    <div id="timer">Time: 45</div>
     <div id="score">Fireflies: 0</div>
     <button id="startBtn">Start Game</button>
-    <div id="message">Tap the glowing fireflies before time runs out!</div>
+    <div id="message">Barnaby says: “Patience helps us notice the right moment.”</div>
     <div id="prize"></div>
   </div>
 
@@ -76,26 +150,30 @@
     const scoreDisplay = document.getElementById("score");
     const timerDisplay = document.getElementById("timer");
     const startBtn = document.getElementById("startBtn");
-    const prizeDisplay = document.getElementById("prize");
     const message = document.getElementById("message");
+    const prizeDisplay = document.getElementById("prize");
 
     let score = 0;
-    let timeLeft = 30;
+    let timeLeft = 45;
     let gameRunning = false;
     let timer;
     let spawnTimer;
+    let audioStarted = false;
+    let audioCtx;
 
     startBtn.onclick = startGame;
 
     function startGame() {
       score = 0;
-      timeLeft = 30;
+      timeLeft = 45;
       gameRunning = true;
       prizeDisplay.textContent = "";
-      message.textContent = "Catch as many fireflies as you can!";
       scoreDisplay.textContent = "Fireflies: 0";
-      timerDisplay.textContent = "Time: 30";
+      timerDisplay.textContent = "Time: 45";
+      message.textContent = "Wait... watch... tap when the glow is bright!";
       startBtn.style.display = "none";
+
+      startGentleMusic();
 
       timer = setInterval(() => {
         timeLeft--;
@@ -106,7 +184,7 @@
         }
       }, 1000);
 
-      spawnTimer = setInterval(createFirefly, 650);
+      spawnTimer = setInterval(createFirefly, 2200);
     }
 
     function createFirefly() {
@@ -115,23 +193,50 @@
       const firefly = document.createElement("div");
       firefly.className = "firefly";
 
-      const x = Math.random() * (window.innerWidth - 40);
-      const y = 120 + Math.random() * (window.innerHeight - 180);
+      firefly.innerHTML = `
+        <div class="glow"></div>
+        <div class="wing left"></div>
+        <div class="wing right"></div>
+        <div class="body"></div>
+        <div class="head"></div>
+      `;
+
+      const x = Math.random() * (window.innerWidth - 70);
+      const y = 160 + Math.random() * (window.innerHeight - 240);
 
       firefly.style.left = x + "px";
       firefly.style.top = y + "px";
 
-      firefly.onclick = () => {
-        score++;
-        scoreDisplay.textContent = "Fireflies: " + score;
-        firefly.remove();
-      };
+      let ready = false;
 
       game.appendChild(firefly);
 
+      const waitTime = 1600 + Math.random() * 2200;
+
       setTimeout(() => {
-        firefly.remove();
-      }, 1800);
+        if (!gameRunning || !firefly.parentNode) return;
+        ready = true;
+        firefly.classList.add("ready");
+      }, waitTime);
+
+      firefly.onclick = () => {
+        if (!gameRunning) return;
+
+        if (ready) {
+          score++;
+          scoreDisplay.textContent = "Fireflies: " + score;
+          message.textContent = "Wonderful patience!";
+          playDing();
+          firefly.remove();
+        } else {
+          message.textContent = "Wait for the glow... patience first!";
+          playSoftOops();
+        }
+      };
+
+      setTimeout(() => {
+        if (firefly.parentNode) firefly.remove();
+      }, waitTime + 3000);
     }
 
     function endGame() {
@@ -146,18 +251,87 @@
 
       let prize = "";
 
-      if (score >= 25) {
-        prize = "Golden Firefly Badge!";
-      } else if (score >= 15) {
-        prize = "Glowing Jar of Fireflies!";
-      } else if (score >= 7) {
-        prize = "Harmony Hollow Bookmark!";
-      } else {
+      if (score >= 10) {
+        prize = "Golden Patience Firefly Badge!";
+      } else if (score >= 6) {
+        prize = "Glowing Firefly Jar!";
+      } else if (score >= 3) {
         prize = "Tiny Firefly Friend!";
+      } else {
+        prize = "Barnaby says: Keep practicing patience!";
       }
 
-      message.textContent = "Great job! Patience and focus helped you finish.";
+      message.textContent = "Great job! You practiced waiting for the right moment.";
       prizeDisplay.textContent = "You earned: " + prize;
+    }
+
+    function startGentleMusic() {
+      if (audioStarted) return;
+      audioStarted = true;
+
+      audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+
+      const notes = [392, 440, 523, 440, 392, 330];
+      let i = 0;
+
+      setInterval(() => {
+        if (!gameRunning) return;
+
+        const osc = audioCtx.createOscillator();
+        const gain = audioCtx.createGain();
+
+        osc.frequency.value = notes[i % notes.length];
+        osc.type = "sine";
+
+        gain.gain.setValueAtTime(0.025, audioCtx.currentTime);
+        gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.2);
+
+        osc.connect(gain);
+        gain.connect(audioCtx.destination);
+
+        osc.start();
+        osc.stop(audioCtx.currentTime + 1.2);
+
+        i++;
+      }, 1400);
+    }
+
+    function playDing() {
+      if (!audioCtx) return;
+
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.frequency.value = 880;
+      osc.type = "sine";
+
+      gain.gain.setValueAtTime(0.08, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.4);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.4);
+    }
+
+    function playSoftOops() {
+      if (!audioCtx) return;
+
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+
+      osc.frequency.value = 220;
+      osc.type = "sine";
+
+      gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+      gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+
+      osc.connect(gain);
+      gain.connect(audioCtx.destination);
+
+      osc.start();
+      osc.stop(audioCtx.currentTime + 0.35);
     }
   </script>
 </body>
