@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Harmony Hollow Firefly Catch</title>
+  <style>
+    body {
+      margin: 0;
+      overflow: hidden;
+      font-family: Georgia, serif;
+      background: linear-gradient(#17233f, #27452f);
+      color: white;
+      text-align: center;
+    }
+
+    #game {
+      position: relative;
+      width: 100vw;
+      height: 100vh;
+      overflow: hidden;
+    }
+
+    h1 {
+      margin-top: 20px;
+      font-size: 32px;
+    }
+
+    #score, #timer, #message {
+      font-size: 22px;
+      margin: 8px;
+    }
+
+    .firefly {
+      position: absolute;
+      width: 28px;
+      height: 28px;
+      background: radial-gradient(circle, #fff8a6, #ffe45c, transparent);
+      border-radius: 50%;
+      box-shadow: 0 0 20px #fff38a;
+      cursor: pointer;
+      animation: float 2s infinite alternate ease-in-out;
+    }
+
+    @keyframes float {
+      from { transform: translateY(0px); }
+      to { transform: translateY(-18px); }
+    }
+
+    #startBtn {
+      padding: 12px 24px;
+      font-size: 20px;
+      border-radius: 20px;
+      border: none;
+      background: #ffe98a;
+      cursor: pointer;
+    }
+
+    #prize {
+      font-size: 24px;
+      margin-top: 15px;
+      color: #ffe98a;
+    }
+  </style>
+</head>
+<body>
+  <div id="game">
+    <h1>Catch the Fireflies</h1>
+    <div id="timer">Time: 30</div>
+    <div id="score">Fireflies: 0</div>
+    <button id="startBtn">Start Game</button>
+    <div id="message">Tap the glowing fireflies before time runs out!</div>
+    <div id="prize"></div>
+  </div>
+
+  <script>
+    const game = document.getElementById("game");
+    const scoreDisplay = document.getElementById("score");
+    const timerDisplay = document.getElementById("timer");
+    const startBtn = document.getElementById("startBtn");
+    const prizeDisplay = document.getElementById("prize");
+    const message = document.getElementById("message");
+
+    let score = 0;
+    let timeLeft = 30;
+    let gameRunning = false;
+    let timer;
+    let spawnTimer;
+
+    startBtn.onclick = startGame;
+
+    function startGame() {
+      score = 0;
+      timeLeft = 30;
+      gameRunning = true;
+      prizeDisplay.textContent = "";
+      message.textContent = "Catch as many fireflies as you can!";
+      scoreDisplay.textContent = "Fireflies: 0";
+      timerDisplay.textContent = "Time: 30";
+      startBtn.style.display = "none";
+
+      timer = setInterval(() => {
+        timeLeft--;
+        timerDisplay.textContent = "Time: " + timeLeft;
+
+        if (timeLeft <= 0) {
+          endGame();
+        }
+      }, 1000);
+
+      spawnTimer = setInterval(createFirefly, 650);
+    }
+
+    function createFirefly() {
+      if (!gameRunning) return;
+
+      const firefly = document.createElement("div");
+      firefly.className = "firefly";
+
+      const x = Math.random() * (window.innerWidth - 40);
+      const y = 120 + Math.random() * (window.innerHeight - 180);
+
+      firefly.style.left = x + "px";
+      firefly.style.top = y + "px";
+
+      firefly.onclick = () => {
+        score++;
+        scoreDisplay.textContent = "Fireflies: " + score;
+        firefly.remove();
+      };
+
+      game.appendChild(firefly);
+
+      setTimeout(() => {
+        firefly.remove();
+      }, 1800);
+    }
+
+    function endGame() {
+      gameRunning = false;
+      clearInterval(timer);
+      clearInterval(spawnTimer);
+
+      document.querySelectorAll(".firefly").forEach(f => f.remove());
+
+      startBtn.style.display = "inline-block";
+      startBtn.textContent = "Play Again";
+
+      let prize = "";
+
+      if (score >= 25) {
+        prize = "Golden Firefly Badge!";
+      } else if (score >= 15) {
+        prize = "Glowing Jar of Fireflies!";
+      } else if (score >= 7) {
+        prize = "Harmony Hollow Bookmark!";
+      } else {
+        prize = "Tiny Firefly Friend!";
+      }
+
+      message.textContent = "Great job! Patience and focus helped you finish.";
+      prizeDisplay.textContent = "You earned: " + prize;
+    }
+  </script>
+</body>
+</html>
