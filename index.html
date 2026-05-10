@@ -1,46 +1,338 @@
 <!DOCTYPE html>
 <html>
 <head>
-  <title>Harmony Hollow Firefly Patience Game</title>
-  <style>
-    body {
-      margin: 0;
-      overflow: hidden;
-      font-family: Georgia, serif;
-      background: linear-gradient(#101936, #203b2b, #315234);
-      color: white;
-      text-align: center;
-      touch-action: manipulation;
-    }
+<meta charset="UTF-8">
+<title>Harmony Hollow Firefly Game</title>
 
-    #game {
-      position: relative;
-      width: 100vw;
-      height: 100vh;
-      overflow: hidden;
-    }
+<style>
+body {
+  margin:0;
+  font-family: Georgia, serif;
+  background: linear-gradient(#0f1c3f,#1f3d2f,#345c3a);
+  color:white;
+  text-align:center;
+}
 
-    h1 {
-      margin-top: 14px;
-      font-size: 28px;
-      color: #ffeaa7;
-      text-shadow: 0 0 8px #000;
-    }
+#intro, #reward {
+  position:fixed;
+  inset:0;
+  background:#102040;
+  display:flex;
+  flex-direction:column;
+  justify-content:center;
+  align-items:center;
+  z-index:10;
+}
 
-    #instructions, #score, #timer, #message, #levelText {
-      font-size: 18px;
-      margin: 6px;
-      text-shadow: 0 0 5px #000;
-    }
+#reward { display:none; }
 
-    button, input {
-      margin: 6px;
-      padding: 12px 18px;
-      font-size: 17px;
-      border-radius: 22px;
-      border: none;
-      font-family: Georgia, serif;
-    }
+button {
+  padding:10px 18px;
+  margin:6px;
+  border:none;
+  border-radius:20px;
+  background:#ffe98a;
+  font-weight:bold;
+  cursor:pointer;
+}
 
-    button {
-      background: #ffe98a
+input {
+  padding:10px;
+  border-radius:12px;
+  border:none;
+  text-align:center;
+}
+
+.firefly {
+  position:absolute;
+  width:40px;
+  height:40px;
+  cursor:pointer;
+}
+
+.glow {
+  position:absolute;
+  width:30px;
+  height:30px;
+  left:5px;
+  top:15px;
+  border-radius:50%;
+  background:radial-gradient(circle,#fff8aa,#ffe96e,transparent);
+  opacity:.3;
+}
+
+.ready .glow {
+  opacity:1;
+  transform:scale(1.5);
+}
+
+.body {
+  position:absolute;
+  left:12px;
+  top:14px;
+  width:12px;
+  height:20px;
+  background:#6b4a2b;
+  border-radius:50%;
+}
+
+.head {
+  position:absolute;
+  left:14px;
+  top:6px;
+  width:10px;
+  height:10px;
+  background:#8b5e35;
+  border-radius:50%;
+}
+
+.eye {
+  position:absolute;
+  width:2px;
+  height:2px;
+  background:black;
+  border-radius:50%;
+  top:3px;
+}
+
+.eye.left { left:2px; }
+.eye.right { right:2px; }
+
+.smile {
+  position:absolute;
+  top:5px;
+  left:2px;
+  width:6px;
+  height:3px;
+  border-bottom:1px solid black;
+  border-radius:50%;
+}
+
+#leaderboard {
+  position:fixed;
+  bottom:10px;
+  left:50%;
+  transform:translateX(-50%);
+  background:rgba(0,0,0,.4);
+  padding:10px;
+  border-radius:12px;
+  font-size:14px;
+}
+</style>
+</head>
+
+<body>
+
+<div id="intro">
+  <h2>🐢 Barnaby says:</h2>
+  <p>“Hello friend… tonight we practice patience.”</p>
+  <input id="name" placeholder="Your name">
+  <br>
+  <button onclick="enter()">Start</button>
+</div>
+
+<div id="reward">
+  <h2>✨ Wonderful Patience!</h2>
+  <p id="rewardText"></p>
+  <button onclick="closeReward()">Play Again</button>
+</div>
+
+<h2>Firefly Glow Game</h2>
+<div id="timer">Time: 40</div>
+<div id="score">Fireflies: 0</div>
+
+<div>
+  <button onclick="setLevel('easy')">Easy</button>
+  <button onclick="setLevel('medium')">Medium</button>
+  <button onclick="setLevel('hard')">Hard</button>
+</div>
+
+<button onclick="startGame()">Start Game</button>
+<p id="message">Wait for the glow…</p>
+
+<div id="leaderboard"></div>
+
+<script>
+let player="Friend";
+let score=0;
+let time=40;
+let running=false;
+let level="easy";
+let spawnTimer,gameTimer;
+let audioCtx;
+
+const settings={
+easy:{spawn:1600,min:800,max:1400,window:3000,strict:false,time:45},
+medium:{spawn:1200,min:700,max:1200,window:2000,strict:true,time:40},
+hard:{spawn:900,min:600,max:1000,window:1400,strict:true,time:35}
+};
+
+function enter(){
+  player=document.getElementById("name").value||"Friend";
+  document.getElementById("intro").style.display="none";
+  showBoard();
+}
+
+function setLevel(l){
+  level=l;
+}
+
+function startGame(){
+  score=0;
+  time=settings[level].time;
+  running=true;
+
+  document.getElementById("score").innerText="Fireflies: 0";
+  document.getElementById("timer").innerText="Time: "+time;
+
+  startMusic();
+
+  gameTimer=setInterval(()=>{
+    time--;
+    document.getElementById("timer").innerText="Time: "+time;
+    if(time<=0) endGame();
+  },1000);
+
+  spawnTimer=setInterval(spawnFirefly,settings[level].spawn);
+}
+
+function spawnFirefly(){
+  if(!running) return;
+
+  let f=document.createElement("div");
+  f.className="firefly";
+
+  f.innerHTML=`
+  <div class="glow"></div>
+  <div class="body"></div>
+  <div class="head">
+    <div class="eye left"></div>
+    <div class="eye right"></div>
+    <div class="smile"></div>
+  </div>`;
+
+  f.style.left=Math.random()*window.innerWidth+"px";
+  f.style.top=120+Math.random()*window.innerHeight+"px";
+
+  document.body.appendChild(f);
+
+  let ready=false;
+  let wait=settings[level].min+Math.random()*(settings[level].max-settings[level].min);
+
+  setTimeout(()=>{
+    ready=true;
+    f.classList.add("ready");
+  },wait);
+
+  f.onclick=()=>{
+    if(!running) return;
+
+    if(ready){
+      score++;
+      document.getElementById("score").innerText="Fireflies: "+score;
+      playDing();
+      f.remove();
+    } else {
+      document.getElementById("message").innerText="Wait for the glow!";
+      playOops();
+
+      if(settings[level].strict){
+        f.remove();
+      }
+    }
+  };
+
+  setTimeout(()=>{
+    f.remove();
+  },wait+settings[level].window);
+}
+
+function endGame(){
+  running=false;
+  clearInterval(spawnTimer);
+  clearInterval(gameTimer);
+
+  let msg = score>10
+    ? "Golden patience!"
+    : score>5
+    ? "Great waiting!"
+    : "Keep practicing patience!";
+
+  document.getElementById("rewardText").innerText =
+    player + ", " + msg + "\n\nGod helps patient hearts grow strong.";
+
+  saveScore();
+  showBoard();
+
+  document.getElementById("reward").style.display="flex";
+}
+
+function closeReward(){
+  document.getElementById("reward").style.display="none";
+}
+
+function saveScore(){
+  let s=JSON.parse(localStorage.getItem("scores")||"[]");
+  s.push({name:player,score});
+  s.sort((a,b)=>b.score-a.score);
+  s=s.slice(0,5);
+  localStorage.setItem("scores",JSON.stringify(s));
+}
+
+function showBoard(){
+  let s=JSON.parse(localStorage.getItem("scores")||"[]");
+  document.getElementById("leaderboard").innerHTML =
+    "<b>Top Scores</b><br>" +
+    s.map(x=>x.name+" - "+x.score).join("<br>");
+}
+
+function startMusic(){
+  if(audioCtx) return;
+  audioCtx=new AudioContext();
+
+  let notes=[392,440,494,523,494,440];
+  let i=0;
+
+  setInterval(()=>{
+    if(!running) return;
+    let o=audioCtx.createOscillator();
+    let g=audioCtx.createGain();
+
+    o.frequency.value=notes[i%notes.length];
+    g.gain.value=0.02;
+
+    o.connect(g);
+    g.connect(audioCtx.destination);
+
+    o.start();
+    o.stop(audioCtx.currentTime+1);
+
+    i++;
+  },900);
+}
+
+function playDing(){
+  let o=audioCtx.createOscillator();
+  let g=audioCtx.createGain();
+  o.frequency.value=800;
+  g.gain.value=0.08;
+  o.connect(g);
+  g.connect(audioCtx.destination);
+  o.start();
+  o.stop(audioCtx.currentTime+.3);
+}
+
+function playOops(){
+  let o=audioCtx.createOscillator();
+  let g=audioCtx.createGain();
+  o.frequency.value=200;
+  g.gain.value=0.05;
+  o.connect(g);
+  g.connect(audioCtx.destination);
+  o.start();
+  o.stop(audioCtx.currentTime+.3);
+}
+</script>
+
+</body>
+</html>
