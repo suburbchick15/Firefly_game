@@ -6,117 +6,232 @@
 
 <style>
 body {
-  margin:0;
+  margin: 0;
+  overflow: hidden;
   font-family: Georgia, serif;
-  background: linear-gradient(#0f1c3f,#1f3d2f,#345c3a);
-  color:white;
-  text-align:center;
+  background: radial-gradient(circle at top, #263f5f, #10213f 45%, #162f24 100%);
+  color: white;
+  text-align: center;
+  touch-action: manipulation;
 }
 
-#intro, #reward {
-  position:fixed;
-  inset:0;
-  background:#102040;
-  display:flex;
-  flex-direction:column;
-  justify-content:center;
-  align-items:center;
-  z-index:10;
+#game {
+  position: relative;
+  width: 100vw;
+  height: 100vh;
+  overflow: hidden;
 }
 
-#reward { display:none; }
+#topPanel {
+  position: relative;
+  z-index: 5;
+  padding-top: 12px;
+  background: linear-gradient(rgba(8,18,38,.95), rgba(8,18,38,.55), transparent);
+  padding-bottom: 18px;
+}
+
+h1 {
+  margin: 6px 0;
+  color: #ffeaa7;
+  font-size: 28px;
+  text-shadow: 0 0 8px #000;
+}
+
+#timer, #score, #message, #levelText {
+  font-size: 18px;
+  margin: 5px;
+  text-shadow: 0 0 6px #000;
+}
 
 button {
-  padding:10px 18px;
-  margin:6px;
-  border:none;
-  border-radius:20px;
-  background:#ffe98a;
-  font-weight:bold;
-  cursor:pointer;
+  padding: 10px 18px;
+  margin: 5px;
+  border: none;
+  border-radius: 22px;
+  background: #ffe98a;
+  color: #3b2b12;
+  font-weight: bold;
+  cursor: pointer;
+  box-shadow: 0 4px 10px rgba(0,0,0,.35);
+}
+
+.levelBtn {
+  background: #d8b85d;
+}
+
+.levelBtn.selected {
+  background: #fff3a6;
+  outline: 3px solid #ffffff;
+  transform: scale(1.08);
 }
 
 input {
-  padding:10px;
-  border-radius:12px;
-  border:none;
-  text-align:center;
+  padding: 11px;
+  border-radius: 15px;
+  border: none;
+  text-align: center;
+  font-size: 17px;
+}
+
+#intro, #reward {
+  position: fixed;
+  inset: 0;
+  background: radial-gradient(circle, #355c3a, #101d3d);
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+  align-items: center;
+  z-index: 20;
+  padding: 25px;
+}
+
+#reward {
+  display: none;
+}
+
+.box {
+  background: rgba(0,0,0,.35);
+  padding: 24px;
+  border-radius: 26px;
+  max-width: 560px;
+  box-shadow: 0 0 22px rgba(255,255,255,.15);
+}
+
+.barnaby {
+  font-size: 72px;
 }
 
 .firefly {
-  position:absolute;
-  width:40px;
-  height:40px;
-  cursor:pointer;
+  position: absolute;
+  width: 54px;
+  height: 54px;
+  cursor: pointer;
+  z-index: 2;
+  animation: floaty 2s infinite alternate ease-in-out;
+}
+
+@keyframes floaty {
+  from { transform: translateY(0); }
+  to { transform: translateY(-12px); }
 }
 
 .glow {
-  position:absolute;
-  width:30px;
-  height:30px;
-  left:5px;
-  top:15px;
-  border-radius:50%;
-  background:radial-gradient(circle,#fff8aa,#ffe96e,transparent);
-  opacity:.3;
+  position: absolute;
+  left: 7px;
+  top: 22px;
+  width: 38px;
+  height: 38px;
+  background: radial-gradient(circle, #fffbd0, #ffe86a, transparent 72%);
+  border-radius: 50%;
+  opacity: .28;
+  box-shadow: 0 0 10px #ffe86a;
+  transition: all .35s;
 }
 
 .ready .glow {
-  opacity:1;
-  transform:scale(1.5);
+  opacity: 1;
+  transform: scale(1.55);
+  box-shadow: 0 0 38px #fff6a8;
+}
+
+.wing {
+  position: absolute;
+  width: 21px;
+  height: 29px;
+  background: rgba(235, 248, 255, .75);
+  border-radius: 50%;
+  top: 12px;
+  z-index: 1;
+}
+
+.wing.left {
+  left: 5px;
+  transform: rotate(-28deg);
+}
+
+.wing.right {
+  right: 5px;
+  transform: rotate(28deg);
 }
 
 .body {
-  position:absolute;
-  left:12px;
-  top:14px;
-  width:12px;
-  height:20px;
-  background:#6b4a2b;
-  border-radius:50%;
+  position: absolute;
+  left: 19px;
+  top: 18px;
+  width: 16px;
+  height: 25px;
+  background: #704b2d;
+  border-radius: 50%;
+  z-index: 3;
 }
 
 .head {
-  position:absolute;
-  left:14px;
-  top:6px;
-  width:10px;
-  height:10px;
-  background:#8b5e35;
-  border-radius:50%;
+  position: absolute;
+  left: 20px;
+  top: 8px;
+  width: 15px;
+  height: 15px;
+  background: #94643a;
+  border-radius: 50%;
+  z-index: 4;
 }
 
 .eye {
-  position:absolute;
-  width:2px;
-  height:2px;
-  background:black;
-  border-radius:50%;
-  top:3px;
+  position: absolute;
+  top: 5px;
+  width: 2.8px;
+  height: 2.8px;
+  background: #1e1209;
+  border-radius: 50%;
 }
 
-.eye.left { left:2px; }
-.eye.right { right:2px; }
+.eye.left {
+  left: 4px;
+}
+
+.eye.right {
+  right: 4px;
+}
 
 .smile {
-  position:absolute;
-  top:5px;
-  left:2px;
-  width:6px;
-  height:3px;
-  border-bottom:1px solid black;
-  border-radius:50%;
+  position: absolute;
+  left: 4px;
+  top: 8px;
+  width: 7px;
+  height: 4px;
+  border-bottom: 1.5px solid #1e1209;
+  border-radius: 50%;
 }
 
 #leaderboard {
-  position:fixed;
-  bottom:10px;
-  left:50%;
-  transform:translateX(-50%);
-  background:rgba(0,0,0,.4);
-  padding:10px;
-  border-radius:12px;
-  font-size:14px;
+  position: fixed;
+  bottom: 10px;
+  left: 50%;
+  transform: translateX(-50%);
+  background: rgba(0,0,0,.45);
+  padding: 10px 16px;
+  border-radius: 16px;
+  font-size: 14px;
+  z-index: 5;
+  max-width: 92%;
+}
+
+#rewardText {
+  font-size: 20px;
+  color: #ffe98a;
+  white-space: pre-line;
+}
+
+.sparkle {
+  font-size: 34px;
+  display: inline-block;
+  margin: 3px;
+  animation: sparkle 1s infinite alternate;
+}
+
+@keyframes sparkle {
+  from { transform: scale(1); opacity: .75; }
+  to { transform: scale(1.25); opacity: 1; }
 }
 </style>
 </head>
@@ -124,214 +239,367 @@ input {
 <body>
 
 <div id="intro">
-  <h2>🐢 Barnaby says:</h2>
-  <p>“Hello friend… tonight we practice patience.”</p>
-  <input id="name" placeholder="Your name">
-  <br>
-  <button onclick="enter()">Start</button>
+  <div class="box">
+    <div class="barnaby">🐢</div>
+    <h1>Barnaby’s Firefly Patience Game</h1>
+    <p>“Hello, friend. Tonight we practice patience. Wait gently, watch carefully, and tap only when the firefly glows bright.”</p>
+    <input id="name" placeholder="Child's name">
+    <br><br>
+    <button onclick="enterGame()">Enter Harmony Hollow</button>
+  </div>
 </div>
 
 <div id="reward">
-  <h2>✨ Wonderful Patience!</h2>
-  <p id="rewardText"></p>
-  <button onclick="closeReward()">Play Again</button>
+  <div class="box">
+    <h1>Wonderful Patience!</h1>
+    <div id="rewardSparkles"></div>
+    <p id="rewardText"></p>
+    <button onclick="closeReward()">Play Again</button>
+  </div>
 </div>
 
-<h2>Firefly Glow Game</h2>
-<div id="timer">Time: 40</div>
-<div id="score">Fireflies: 0</div>
+<div id="game">
+  <div id="topPanel">
+    <h1>Harmony Hollow Firefly Glow Game</h1>
+    <div id="levelText">Level: Easy</div>
+    <div id="timer">Time: 45</div>
+    <div id="score">Fireflies: 0</div>
 
-<div>
-  <button onclick="setLevel('easy')">Easy</button>
-  <button onclick="setLevel('medium')">Medium</button>
-  <button onclick="setLevel('hard')">Hard</button>
+    <div>
+      <button id="easyBtn" class="levelBtn selected" onclick="setLevel('easy')">Easy</button>
+      <button id="mediumBtn" class="levelBtn" onclick="setLevel('medium')">Medium</button>
+      <button id="hardBtn" class="levelBtn" onclick="setLevel('hard')">Hard</button>
+    </div>
+
+    <button id="startBtn" onclick="startGame()">Start Game</button>
+    <div id="message">Barnaby says: “Patience helps us notice the right moment.”</div>
+  </div>
+
+  <div id="leaderboard"></div>
 </div>
-
-<button onclick="startGame()">Start Game</button>
-<p id="message">Wait for the glow…</p>
-
-<div id="leaderboard"></div>
 
 <script>
-let player="Friend";
-let score=0;
-let time=40;
-let running=false;
-let level="easy";
-let spawnTimer,gameTimer;
+let player = "Friend";
+let score = 0;
+let time = 45;
+let running = false;
+let level = "easy";
+let spawnTimer;
+let gameTimer;
 let audioCtx;
+let musicTimer;
 
-const settings={
-easy:{spawn:1600,min:800,max:1400,window:3000,strict:false,time:45},
-medium:{spawn:1200,min:700,max:1200,window:2000,strict:true,time:40},
-hard:{spawn:900,min:600,max:1000,window:1400,strict:true,time:35}
+const settings = {
+  easy: {
+    label: "Easy",
+    spawn: 1650,
+    min: 850,
+    max: 1450,
+    window: 3200,
+    strict: false,
+    time: 45
+  },
+  medium: {
+    label: "Medium",
+    spawn: 1250,
+    min: 700,
+    max: 1200,
+    window: 2200,
+    strict: true,
+    time: 40
+  },
+  hard: {
+    label: "Hard",
+    spawn: 950,
+    min: 550,
+    max: 950,
+    window: 1500,
+    strict: true,
+    time: 35
+  }
 };
 
-function enter(){
-  player=document.getElementById("name").value||"Friend";
-  document.getElementById("intro").style.display="none";
+function enterGame() {
+  player = document.getElementById("name").value.trim() || "Friend";
+  document.getElementById("intro").style.display = "none";
+  document.getElementById("message").innerText =
+    "Welcome, " + player + "! Choose your moment with patience.";
   showBoard();
 }
 
-function setLevel(l){
-  level=l;
+function setLevel(newLevel) {
+  if (running) return;
+
+  level = newLevel;
+  time = settings[level].time;
+
+  document.getElementById("levelText").innerText = "Level: " + settings[level].label;
+  document.getElementById("timer").innerText = "Time: " + time;
+  document.getElementById("message").innerText =
+    "Barnaby says: “Choose your moment with patience.”";
+
+  document.getElementById("easyBtn").classList.remove("selected");
+  document.getElementById("mediumBtn").classList.remove("selected");
+  document.getElementById("hardBtn").classList.remove("selected");
+
+  document.getElementById(level + "Btn").classList.add("selected");
 }
 
-function startGame(){
-  score=0;
-  time=settings[level].time;
-  running=true;
+function startGame() {
+  clearInterval(spawnTimer);
+  clearInterval(gameTimer);
+  document.querySelectorAll(".firefly").forEach(f => f.remove());
 
-  document.getElementById("score").innerText="Fireflies: 0";
-  document.getElementById("timer").innerText="Time: "+time;
+  score = 0;
+  time = settings[level].time;
+  running = true;
+
+  document.getElementById("score").innerText = "Fireflies: 0";
+  document.getElementById("timer").innerText = "Time: " + time;
+  document.getElementById("message").innerText = "Wait... watch... tap when the glow is bright!";
+  document.getElementById("startBtn").style.display = "none";
 
   startMusic();
 
-  gameTimer=setInterval(()=>{
+  gameTimer = setInterval(() => {
     time--;
-    document.getElementById("timer").innerText="Time: "+time;
-    if(time<=0) endGame();
-  },1000);
+    document.getElementById("timer").innerText = "Time: " + time;
 
-  spawnTimer=setInterval(spawnFirefly,settings[level].spawn);
+    if (time <= 0) {
+      endGame();
+    }
+  }, 1000);
+
+  spawnTimer = setInterval(spawnFirefly, settings[level].spawn);
 }
 
-function spawnFirefly(){
-  if(!running) return;
+function spawnFirefly() {
+  if (!running) return;
 
-  let f=document.createElement("div");
-  f.className="firefly";
+  const firefly = document.createElement("div");
+  firefly.className = "firefly";
 
-  f.innerHTML=`
-  <div class="glow"></div>
-  <div class="body"></div>
-  <div class="head">
-    <div class="eye left"></div>
-    <div class="eye right"></div>
-    <div class="smile"></div>
-  </div>`;
+  firefly.innerHTML = `
+    <div class="glow"></div>
+    <div class="wing left"></div>
+    <div class="wing right"></div>
+    <div class="body"></div>
+    <div class="head">
+      <div class="eye left"></div>
+      <div class="eye right"></div>
+      <div class="smile"></div>
+    </div>
+  `;
 
-  f.style.left=Math.random()*window.innerWidth+"px";
-  f.style.top=120+Math.random()*window.innerHeight+"px";
+  const safeTop = 210;
+  const safeBottom = 95;
 
-  document.body.appendChild(f);
+  const x = 20 + Math.random() * (window.innerWidth - 90);
+  const y = safeTop + Math.random() * (window.innerHeight - safeTop - safeBottom);
 
-  let ready=false;
-  let wait=settings[level].min+Math.random()*(settings[level].max-settings[level].min);
+  firefly.style.left = x + "px";
+  firefly.style.top = y + "px";
 
-  setTimeout(()=>{
-    ready=true;
-    f.classList.add("ready");
-  },wait);
+  document.getElementById("game").appendChild(firefly);
 
-  f.onclick=()=>{
-    if(!running) return;
+  let ready = false;
+  const wait = settings[level].min + Math.random() * (settings[level].max - settings[level].min);
 
-    if(ready){
+  setTimeout(() => {
+    if (!running || !firefly.parentNode) return;
+    ready = true;
+    firefly.classList.add("ready");
+  }, wait);
+
+  firefly.onclick = () => {
+    if (!running) return;
+
+    if (ready) {
       score++;
-      document.getElementById("score").innerText="Fireflies: "+score;
+      document.getElementById("score").innerText = "Fireflies: " + score;
+      document.getElementById("message").innerText = getPraise();
       playDing();
-      f.remove();
+      firefly.remove();
     } else {
-      document.getElementById("message").innerText="Wait for the glow!";
+      document.getElementById("message").innerText =
+        "Oops! Wait for the glow. Patience first!";
       playOops();
 
-      if(settings[level].strict){
-        f.remove();
+      if (settings[level].strict) {
+        firefly.remove();
       }
     }
   };
 
-  setTimeout(()=>{
-    f.remove();
-  },wait+settings[level].window);
+  setTimeout(() => {
+    if (firefly.parentNode) firefly.remove();
+  }, wait + settings[level].window);
 }
 
-function endGame(){
-  running=false;
+function endGame() {
+  running = false;
   clearInterval(spawnTimer);
   clearInterval(gameTimer);
 
-  let msg = score>10
-    ? "Golden patience!"
-    : score>5
-    ? "Great waiting!"
-    : "Keep practicing patience!";
+  document.querySelectorAll(".firefly").forEach(f => f.remove());
 
-  document.getElementById("rewardText").innerText =
-    player + ", " + msg + "\n\nGod helps patient hearts grow strong.";
+  document.getElementById("startBtn").style.display = "inline-block";
+  document.getElementById("startBtn").innerText = "Play Again";
 
   saveScore();
   showBoard();
-
-  document.getElementById("reward").style.display="flex";
+  showReward();
 }
 
-function closeReward(){
-  document.getElementById("reward").style.display="none";
+function showReward() {
+  let prize;
+
+  if (score >= 14) {
+    prize = "Golden Patience Firefly Badge";
+  } else if (score >= 9) {
+    prize = "Glowing Firefly Jar";
+  } else if (score >= 5) {
+    prize = "Tiny Firefly Friend";
+  } else {
+    prize = "Barnaby’s Practice Star";
+  }
+
+  const sparkleBox = document.getElementById("rewardSparkles");
+  sparkleBox.innerHTML = "";
+
+  const sparkleCount = Math.max(3, Math.min(score, 12));
+
+  for (let i = 0; i < sparkleCount; i++) {
+    const s = document.createElement("span");
+    s.className = "sparkle";
+    s.innerText = "✨";
+    sparkleBox.appendChild(s);
+  }
+
+  document.getElementById("rewardText").innerText =
+    player + ", you earned the " + prize + "!\n\nGod helps patient hearts grow strong.";
+
+  document.getElementById("reward").style.display = "flex";
 }
 
-function saveScore(){
-  let s=JSON.parse(localStorage.getItem("scores")||"[]");
-  s.push({name:player,score});
-  s.sort((a,b)=>b.score-a.score);
-  s=s.slice(0,5);
-  localStorage.setItem("scores",JSON.stringify(s));
+function closeReward() {
+  document.getElementById("reward").style.display = "none";
 }
 
-function showBoard(){
-  let s=JSON.parse(localStorage.getItem("scores")||"[]");
+function saveScore() {
+  let scores = JSON.parse(localStorage.getItem("fireflyScores") || "[]");
+
+  scores.push({
+    name: player,
+    score: score,
+    level: settings[level].label
+  });
+
+  scores.sort((a, b) => b.score - a.score);
+  scores = scores.slice(0, 5);
+
+  localStorage.setItem("fireflyScores", JSON.stringify(scores));
+}
+
+function showBoard() {
+  let scores = JSON.parse(localStorage.getItem("fireflyScores") || "[]");
+
+  if (scores.length === 0) {
+    document.getElementById("leaderboard").innerHTML = "<b>Top Scores</b><br>No scores yet.";
+    return;
+  }
+
   document.getElementById("leaderboard").innerHTML =
     "<b>Top Scores</b><br>" +
-    s.map(x=>x.name+" - "+x.score).join("<br>");
+    scores.map((s, i) =>
+      (i + 1) + ". " + s.name + " — " + s.score + " — " + s.level
+    ).join("<br>");
 }
 
-function startMusic(){
-  if(audioCtx) return;
-  audioCtx=new AudioContext();
+function getPraise() {
+  const praise = [
+    "Wonderful patience!",
+    "You waited for the right moment!",
+    "Great watching!",
+    "That was gentle and careful!",
+    "Barnaby is proud of your patience!"
+  ];
 
-  let notes=[392,440,494,523,494,440];
-  let i=0;
+  return praise[Math.floor(Math.random() * praise.length)];
+}
 
-  setInterval(()=>{
-    if(!running) return;
-    let o=audioCtx.createOscillator();
-    let g=audioCtx.createGain();
+function startMusic() {
+  if (!audioCtx) {
+    audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+  }
 
-    o.frequency.value=notes[i%notes.length];
-    g.gain.value=0.02;
+  if (musicTimer) return;
 
-    o.connect(g);
-    g.connect(audioCtx.destination);
+  const notes = [392, 440, 494, 523, 494, 440, 392, 349];
+  let i = 0;
 
-    o.start();
-    o.stop(audioCtx.currentTime+1);
+  musicTimer = setInterval(() => {
+    if (!running) return;
+
+    const osc = audioCtx.createOscillator();
+    const gain = audioCtx.createGain();
+
+    osc.frequency.value = notes[i % notes.length];
+    osc.type = "sine";
+
+    gain.gain.setValueAtTime(0.018, audioCtx.currentTime);
+    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.1);
+
+    osc.connect(gain);
+    gain.connect(audioCtx.destination);
+
+    osc.start();
+    osc.stop(audioCtx.currentTime + 1.1);
 
     i++;
-  },900);
+  }, 900);
 }
 
-function playDing(){
-  let o=audioCtx.createOscillator();
-  let g=audioCtx.createGain();
-  o.frequency.value=800;
-  g.gain.value=0.08;
-  o.connect(g);
-  g.connect(audioCtx.destination);
-  o.start();
-  o.stop(audioCtx.currentTime+.3);
+function playDing() {
+  if (!audioCtx) return;
+
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+
+  osc.frequency.value = 850;
+  osc.type = "sine";
+
+  gain.gain.setValueAtTime(0.075, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.35);
 }
 
-function playOops(){
-  let o=audioCtx.createOscillator();
-  let g=audioCtx.createGain();
-  o.frequency.value=200;
-  g.gain.value=0.05;
-  o.connect(g);
-  g.connect(audioCtx.destination);
-  o.start();
-  o.stop(audioCtx.currentTime+.3);
+function playOops() {
+  if (!audioCtx) return;
+
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+
+  osc.frequency.value = 220;
+  osc.type = "sine";
+
+  gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
+
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  osc.start();
+  osc.stop(audioCtx.currentTime + 0.35);
 }
+
+showBoard();
+setLevel("easy");
 </script>
 
 </body>
