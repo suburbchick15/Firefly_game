@@ -94,7 +94,6 @@ input {
   padding: 24px;
   border-radius: 26px;
   max-width: 560px;
-  box-shadow: 0 0 22px rgba(255,255,255,.15);
 }
 
 .barnaby {
@@ -185,13 +184,8 @@ input {
   border-radius: 50%;
 }
 
-.eye.left {
-  left: 4px;
-}
-
-.eye.right {
-  right: 4px;
-}
+.eye.left { left: 4px; }
+.eye.right { right: 4px; }
 
 .smile {
   position: absolute;
@@ -287,36 +281,13 @@ let level = "easy";
 let spawnTimer;
 let gameTimer;
 let audioCtx;
-let musicTimer;
+let melodyTimer;
+let harmonyTimer;
 
 const settings = {
-  easy: {
-    label: "Easy",
-    spawn: 1650,
-    min: 850,
-    max: 1450,
-    window: 3200,
-    strict: false,
-    time: 45
-  },
-  medium: {
-    label: "Medium",
-    spawn: 1250,
-    min: 700,
-    max: 1200,
-    window: 2200,
-    strict: true,
-    time: 40
-  },
-  hard: {
-    label: "Hard",
-    spawn: 950,
-    min: 550,
-    max: 950,
-    window: 1500,
-    strict: true,
-    time: 35
-  }
+  easy: { label: "Easy", spawn: 1650, min: 850, max: 1450, window: 3200, strict: false, time: 45 },
+  medium: { label: "Medium", spawn: 1250, min: 700, max: 1200, window: 2200, strict: true, time: 40 },
+  hard: { label: "Hard", spawn: 950, min: 550, max: 950, window: 1500, strict: true, time: 35 }
 };
 
 function enterGame() {
@@ -341,7 +312,6 @@ function setLevel(newLevel) {
   document.getElementById("easyBtn").classList.remove("selected");
   document.getElementById("mediumBtn").classList.remove("selected");
   document.getElementById("hardBtn").classList.remove("selected");
-
   document.getElementById(level + "Btn").classList.add("selected");
 }
 
@@ -359,15 +329,12 @@ function startGame() {
   document.getElementById("message").innerText = "Wait... watch... tap when the glow is bright!";
   document.getElementById("startBtn").style.display = "none";
 
-  startMusic();
+  startBackgroundMusic();
 
   gameTimer = setInterval(() => {
     time--;
     document.getElementById("timer").innerText = "Time: " + time;
-
-    if (time <= 0) {
-      endGame();
-    }
+    if (time <= 0) endGame();
   }, 1000);
 
   spawnTimer = setInterval(spawnFirefly, settings[level].spawn);
@@ -393,7 +360,6 @@ function spawnFirefly() {
 
   const safeTop = 210;
   const safeBottom = 95;
-
   const x = 20 + Math.random() * (window.innerWidth - 90);
   const y = safeTop + Math.random() * (window.innerHeight - safeTop - safeBottom);
 
@@ -425,9 +391,7 @@ function spawnFirefly() {
         "Oops! Wait for the glow. Patience first!";
       playOops();
 
-      if (settings[level].strict) {
-        firefly.remove();
-      }
+      if (settings[level].strict) firefly.remove();
     }
   };
 
@@ -454,15 +418,10 @@ function endGame() {
 function showReward() {
   let prize;
 
-  if (score >= 14) {
-    prize = "Golden Patience Firefly Badge";
-  } else if (score >= 9) {
-    prize = "Glowing Firefly Jar";
-  } else if (score >= 5) {
-    prize = "Tiny Firefly Friend";
-  } else {
-    prize = "Barnaby’s Practice Star";
-  }
+  if (score >= 14) prize = "Golden Patience Firefly Badge";
+  else if (score >= 9) prize = "Glowing Firefly Jar";
+  else if (score >= 5) prize = "Tiny Firefly Friend";
+  else prize = "Barnaby’s Practice Star";
 
   const sparkleBox = document.getElementById("rewardSparkles");
   sparkleBox.innerHTML = "";
@@ -528,74 +487,69 @@ function getPraise() {
   return praise[Math.floor(Math.random() * praise.length)];
 }
 
-function startMusic() {
+/* BACKGROUND MUSIC */
+function setupAudio() {
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
   }
 
-  if (musicTimer) return;
+  if (audioCtx.state === "suspended") {
+    audioCtx.resume();
+  }
+}
 
-  const notes = [392, 440, 494, 523, 494, 440, 392, 349];
-  let i = 0;
+function playTone(freq, duration, volume, type = "sine") {
+  if (!audioCtx) return;
 
-  musicTimer = setInterval(() => {
+  const osc = audioCtx.createOscillator();
+  const gain = audioCtx.createGain();
+
+  osc.frequency.value = freq;
+  osc.type = type;
+
+  gain.gain.setValueAtTime(0.0001, audioCtx.currentTime);
+  gain.gain.exponentialRampToValueAtTime(volume, audioCtx.currentTime + 0.04);
+  gain.gain.exponentialRampToValueAtTime(0.0001, audioCtx.currentTime + duration);
+
+  osc.connect(gain);
+  gain.connect(audioCtx.destination);
+
+  osc.start();
+  osc.stop(audioCtx.currentTime + duration);
+}
+
+function startBackgroundMusic() {
+  setupAudio();
+
+  if (melodyTimer || harmonyTimer) return;
+
+  const melody = [392, 440, 494, 523, 494, 440, 392, 349];
+  const harmony = [196, 220, 247, 262];
+
+  let m = 0;
+  let h = 0;
+
+  melodyTimer = setInterval(() => {
     if (!running) return;
+    playTone(melody[m % melody.length], 1.15, 0.055, "sine");
+    m++;
+  }, 650);
 
-    const osc = audioCtx.createOscillator();
-    const gain = audioCtx.createGain();
-
-    osc.frequency.value = notes[i % notes.length];
-    osc.type = "sine";
-
-    gain.gain.setValueAtTime(0.035, audioCtx.currentTime);
-    gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.1);
-
-    osc.connect(gain);
-    gain.connect(audioCtx.destination);
-
-    osc.start();
-    osc.stop(audioCtx.currentTime + 1.1);
-
-    i++;
-  }, 700);
+  harmonyTimer = setInterval(() => {
+    if (!running) return;
+    playTone(harmony[h % harmony.length], 2.2, 0.025, "triangle");
+    h++;
+  }, 2600);
 }
 
 function playDing() {
-  if (!audioCtx) return;
-
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-
-  osc.frequency.value = 850;
-  osc.type = "sine";
-
-  gain.gain.setValueAtTime(0.075, audioCtx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
-
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-
-  osc.start();
-  osc.stop(audioCtx.currentTime + 0.35);
+  setupAudio();
+  playTone(850, 0.35, 0.09, "sine");
 }
 
 function playOops() {
-  if (!audioCtx) return;
-
-  const osc = audioCtx.createOscillator();
-  const gain = audioCtx.createGain();
-
-  osc.frequency.value = 220;
-  osc.type = "sine";
-
-  gain.gain.setValueAtTime(0.04, audioCtx.currentTime);
-  gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 0.35);
-
-  osc.connect(gain);
-  gain.connect(audioCtx.destination);
-
-  osc.start();
-  osc.stop(audioCtx.currentTime + 0.35);
+  setupAudio();
+  playTone(220, 0.35, 0.05, "sine");
 }
 
 showBoard();
