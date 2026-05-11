@@ -547,7 +547,7 @@ function startMusic() {
     osc.frequency.value = notes[i % notes.length];
     osc.type = "sine";
 
-    gain.gain.setValueAtTime(0.018, audioCtx.currentTime);
+    gain.gain.setValueAtTime(0.035, audioCtx.currentTime);
     gain.gain.exponentialRampToValueAtTime(0.001, audioCtx.currentTime + 1.1);
 
     osc.connect(gain);
@@ -557,7 +557,7 @@ function startMusic() {
     osc.stop(audioCtx.currentTime + 1.1);
 
     i++;
-  }, 900);
+  }, 700);
 }
 
 function playDing() {
