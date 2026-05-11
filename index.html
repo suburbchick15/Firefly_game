@@ -26,8 +26,8 @@ body {
   position: relative;
   z-index: 5;
   padding-top: 12px;
-  background: linear-gradient(rgba(8,18,38,.95), rgba(8,18,38,.55), transparent);
   padding-bottom: 18px;
+  background: linear-gradient(rgba(8,18,38,.95), rgba(8,18,38,.55), transparent);
 }
 
 h1 {
@@ -43,7 +43,8 @@ h1 {
   text-shadow: 0 0 6px #000;
 }
 
-button {
+button, .downloadBtn {
+  display: inline-block;
   padding: 10px 18px;
   margin: 5px;
   border: none;
@@ -53,6 +54,8 @@ button {
   font-weight: bold;
   cursor: pointer;
   box-shadow: 0 4px 10px rgba(0,0,0,.35);
+  text-decoration: none;
+  font-size: 15px;
 }
 
 .levelBtn {
@@ -93,7 +96,7 @@ input {
   background: rgba(0,0,0,.35);
   padding: 24px;
   border-radius: 26px;
-  max-width: 560px;
+  max-width: 590px;
 }
 
 .barnaby {
@@ -216,6 +219,17 @@ input {
   white-space: pre-line;
 }
 
+#earnedBadge {
+  font-size: 23px;
+  color: #fff3a6;
+  font-weight: bold;
+  margin-top: 10px;
+}
+
+#downloadArea {
+  margin-top: 14px;
+}
+
 .sparkle {
   font-size: 34px;
   display: inline-block;
@@ -247,7 +261,14 @@ input {
   <div class="box">
     <h1>Wonderful Patience!</h1>
     <div id="rewardSparkles"></div>
+    <div id="earnedBadge"></div>
     <p id="rewardText"></p>
+
+    <div id="downloadArea">
+      <a id="badgeDownload" class="downloadBtn" href="#" onclick="placeholderDownload(event)">Download Full-Color Badge</a>
+      <a id="coloringDownload" class="downloadBtn" href="#" onclick="placeholderDownload(event)">Download Coloring Version</a>
+    </div>
+
     <button onclick="closeReward()">Play Again</button>
   </div>
 </div>
@@ -283,11 +304,51 @@ let gameTimer;
 let audioCtx;
 let melodyTimer;
 let harmonyTimer;
+let earnedReward = null;
 
 const settings = {
   easy: { label: "Easy", spawn: 1650, min: 850, max: 1450, window: 3200, strict: false, time: 45 },
   medium: { label: "Medium", spawn: 1250, min: 700, max: 1200, window: 2200, strict: true, time: 40 },
   hard: { label: "Hard", spawn: 950, min: 550, max: 950, window: 1500, strict: true, time: 35 }
+};
+
+/*
+Prize logic:
+- Level changes the challenge.
+- Score decides the badge.
+- Hard mode can unlock a secret badge only with a very high score.
+*/
+const rewards = {
+  practice: {
+    name: "Barnaby’s Practice Star",
+    message: "Keep practicing. Patient hearts grow little by little.",
+    badgeFile: "prizes/practice-star-badge.png",
+    coloringFile: "prizes/practice-star-coloring.pdf"
+  },
+  tiny: {
+    name: "Tiny Firefly Friend Badge",
+    message: "You waited and watched carefully. Your little light is shining.",
+    badgeFile: "prizes/tiny-firefly-friend-badge.png",
+    coloringFile: "prizes/tiny-firefly-friend-coloring.pdf"
+  },
+  jar: {
+    name: "Glowing Firefly Jar Badge",
+    message: "Your patience helped you gather glowing moments.",
+    badgeFile: "prizes/glowing-firefly-jar-badge.png",
+    coloringFile: "prizes/glowing-firefly-jar-coloring.pdf"
+  },
+  golden: {
+    name: "Golden Patience Firefly Badge",
+    message: "You showed strong patience and careful timing.",
+    badgeFile: "prizes/golden-patience-firefly-badge.png",
+    coloringFile: "prizes/golden-patience-firefly-coloring.pdf"
+  },
+  secret: {
+    name: "Secret Moonlight Guardian Badge",
+    message: "You found the secret reward by waiting with wisdom and care.",
+    badgeFile: "prizes/moonlight-guardian-badge.png",
+    coloringFile: "prizes/moonlight-guardian-coloring.pdf"
+  }
 };
 
 function enterGame() {
@@ -323,6 +384,7 @@ function startGame() {
   score = 0;
   time = settings[level].time;
   running = true;
+  earnedReward = null;
 
   document.getElementById("score").innerText = "Fireflies: 0";
   document.getElementById("timer").innerText = "Time: " + time;
@@ -400,6 +462,26 @@ function spawnFirefly() {
   }, wait + settings[level].window);
 }
 
+function getRewardForScore(finalScore, selectedLevel) {
+  if (selectedLevel === "hard" && finalScore >= 18) {
+    return rewards.secret;
+  }
+
+  if (finalScore >= 14) {
+    return rewards.golden;
+  }
+
+  if (finalScore >= 9) {
+    return rewards.jar;
+  }
+
+  if (finalScore >= 5) {
+    return rewards.tiny;
+  }
+
+  return rewards.practice;
+}
+
 function endGame() {
   running = false;
   clearInterval(spawnTimer);
@@ -410,23 +492,18 @@ function endGame() {
   document.getElementById("startBtn").style.display = "inline-block";
   document.getElementById("startBtn").innerText = "Play Again";
 
+  earnedReward = getRewardForScore(score, level);
+
   saveScore();
   showBoard();
   showReward();
 }
 
 function showReward() {
-  let prize;
-
-  if (score >= 14) prize = "Golden Patience Firefly Badge";
-  else if (score >= 9) prize = "Glowing Firefly Jar";
-  else if (score >= 5) prize = "Tiny Firefly Friend";
-  else prize = "Barnaby’s Practice Star";
-
   const sparkleBox = document.getElementById("rewardSparkles");
   sparkleBox.innerHTML = "";
 
-  const sparkleCount = Math.max(3, Math.min(score, 12));
+  const sparkleCount = Math.max(3, Math.min(score, 14));
 
   for (let i = 0; i < sparkleCount; i++) {
     const s = document.createElement("span");
@@ -435,10 +512,32 @@ function showReward() {
     sparkleBox.appendChild(s);
   }
 
+  document.getElementById("earnedBadge").innerText = earnedReward.name;
+
   document.getElementById("rewardText").innerText =
-    player + ", you earned the " + prize + "!\n\nGod helps patient hearts grow strong.";
+    player + ", you caught " + score + " fireflies on " + settings[level].label + " mode.\n\n" +
+    earnedReward.message + "\n\n" +
+    "God helps patient hearts grow strong.";
+
+  const badgeBtn = document.getElementById("badgeDownload");
+  const coloringBtn = document.getElementById("coloringDownload");
+
+  badgeBtn.href = earnedReward.badgeFile;
+  coloringBtn.href = earnedReward.coloringFile;
+
+  badgeBtn.setAttribute("download", "");
+  coloringBtn.setAttribute("download", "");
 
   document.getElementById("reward").style.display = "flex";
+}
+
+function placeholderDownload(event) {
+  const href = event.currentTarget.getAttribute("href");
+
+  if (!href || href === "#") {
+    event.preventDefault();
+    alert("This prize file is coming soon!");
+  }
 }
 
 function closeReward() {
@@ -451,7 +550,8 @@ function saveScore() {
   scores.push({
     name: player,
     score: score,
-    level: settings[level].label
+    level: settings[level].label,
+    badge: earnedReward.name
   });
 
   scores.sort((a, b) => b.score - a.score);
@@ -487,7 +587,6 @@ function getPraise() {
   return praise[Math.floor(Math.random() * praise.length)];
 }
 
-/* BACKGROUND MUSIC */
 function setupAudio() {
   if (!audioCtx) {
     audioCtx = new (window.AudioContext || window.webkitAudioContext)();
